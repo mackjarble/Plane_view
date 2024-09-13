@@ -24,8 +24,8 @@ This Python-based application uses an RTL-SDR dongle to receive and demodulate A
 1. Clone the repository or download the source code:
 
 ```bash
-   git clone https://github.com/mackjarble/adsb-visualizer.git
-   cd adsb-visualizer
+   git clone https://github.com/mackjarble/Plane_view.git
+   cd Plane_view
 ```
 2. Install the required dependencies:
 

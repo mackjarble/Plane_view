@@ -2,6 +2,7 @@
 
 import sys
 import numpy as np
+import requests
 from PyQt5 import QtWidgets, QtCore
 import pyqtgraph as pg
 from pyqtgraph import PlotWidget
@@ -9,6 +10,7 @@ import folium
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 from adsb_decoder import ADSBDecoder
 from rtlsdr_interface import RTLSDRInterface
+import tempfile
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
@@ -89,8 +91,11 @@ class MainWindow(QtWidgets.QMainWindow):
         Args:
             aircraft_data (list): A list of decoded ADS-B data.
         """
+        # Get the user's current location (lat, lon)
+        lat, lon = get_current_location()
+
         # Reset map
-        self.map_widget = folium.Map(location=[0, 0], zoom_start=2)
+        self.map_widget = folium.Map(location=[lat, lon], zoom_start=8)
 
         if aircraft_data:
             for data in aircraft_data:
@@ -104,15 +109,33 @@ class MainWindow(QtWidgets.QMainWindow):
                         )
                         marker.add_to(self.map_widget)
 
-        # Render the updated map to the WebEngineView
-        data = self.map_widget._repr_html_().encode('utf-8')
-        self.map_view.setHtml(data.decode())
+        # Save map to temporary file
+        temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".html")
+        map_path = temp_file.name
+        self.map_widget.save(map_path)
+    
+        # Load the temporary HTML file into QWebEngineView
+        self.map_view.setHtml("<html><body><h1>Test Page</h1></body></html>")
+        self.map_view.load(QtCore.QUrl.fromLocalFile(map_path))
 
 def main():
     app = QtWidgets.QApplication(sys.argv)
     main_window = MainWindow()
     main_window.show()
     sys.exit(app.exec_())
+
+def get_current_location():
+    """Fetch current location based on IP address using the ipinfo.io API."""
+    try:
+        response = requests.get('https://ipinfo.io/')
+        data = response.json()
+        location = data['loc'].split(',')
+        latitude = float(location[0])
+        longitude = float(location[1])
+        return latitude, longitude
+    except Exception as e:
+        print(f"Error fetching location: {e}")
+        return 0.0, 0.0  # Fallback to default locationdef get
 
 if __name__ == "__main__":
     main()

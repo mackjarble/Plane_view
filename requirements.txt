@@ -1,0 +1,10 @@
+numpy
+scipy
+pyModeS
+PyQt5
+folium
+geopy
+PyQtWebEngine
+pyrtlsdr
+pyrtlsdrlib
+requests
